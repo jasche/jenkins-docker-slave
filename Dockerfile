@@ -1,17 +1,21 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
+
 MAINTAINER Bibin Wilson <bibinwilsonn@gmail.com>
 
 # Make sure the package repository is up to date.
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get install -y git
+RUN apt-get install -y git 
+
 # Install a basic SSH server
 RUN apt-get install -y openssh-server
 RUN sed -i 's|session    required     pam_loginuid.so|session    optional     pam_loginuid.so|g' /etc/pam.d/sshd
 RUN mkdir -p /var/run/sshd
 
-# Install JDK 7 (latest edition)
-RUN apt-get install -y openjdk-7-jdk
+
+
+# Install JDK 8 (latest edition)
+RUN apt-get install -y openjdk-8-jdk maven 
 
 # Add user jenkins to the image
 RUN adduser --quiet jenkins
@@ -22,9 +26,18 @@ RUN mkdir /home/jenkins/.m2
 
 ADD settings.xml /home/jenkins/.m2/
 
-RUN chown -R jenkins:jenkins /home/jenkins/.m2/ 
+RUN chown -R jenkins:jenkins /home/jenkins/ 
 
-RUN apt-get install -y maven
+RUN apt-get install -y software-properties-common
+
+RUN  wget -O- http://apt.dockerproject.org/gpg | apt-key add -
+RUN  apt-add-repository "deb http://apt.dockerproject.org/repo ubuntu-xenial main"
+RUN  apt-get update
+
+RUN apt-cache policy docker-engine
+RUN apt-get install -y docker-engine=1.13.1-0~ubuntu-xenial
+
+RUN usermod -aG root jenkins
 # Standard SSH port
 EXPOSE 22
 
